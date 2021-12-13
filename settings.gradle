@@ -1,6 +1,7 @@
 pluginManagement {
 	repositories {
 		gradlePluginPortal()
+		maven { url 'https://maven.aliyun.com/repository/public' }
 		maven { url 'https://repo.spring.io/plugins-release' }
 	}
 }
@@ -36,3 +37,26 @@ rootProject.name = "spring"
 rootProject.children.each {project ->
 	project.buildFileName = "${project.name}.gradle"
 }
+
+settings.gradle.projectsLoaded {
+	gradleEnterprise {
+		buildScan {
+			if (settings.gradle.rootProject.hasProperty('mainToolchain')) {
+				value("Main toolchain", 'JDK' + settings.gradle.rootProject.getProperty('mainToolchain'))
+			}
+			if (settings.gradle.rootProject.hasProperty('testToolchain')) {
+				value("Test toolchain", 'JDK' + settings.gradle.rootProject.getProperty('testToolchain'))
+			}
+			File buildDir = settings.gradle.rootProject.getBuildDir()
+			buildDir.mkdirs()
+			new File(buildDir, "build-scan-uri.txt").text = "(build scan not generated)"
+			buildScanPublished { scan ->
+				if (buildDir.exists()) {
+					new File(buildDir, "build-scan-uri.txt").text = "${scan.buildScanUri}\n"
+				} 
+			}
+		}
+	}
+}
+include 'spring-mybatis-demo'
+
